@@ -1,0 +1,8 @@
+#BlueJ class context
+#Fri Oct 02 14:19:03 ART 2026
+comment0.target=Socio
+comment0.text=\r\n Write a description of class Socio here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
+comment1.params=nombre apellido dni telefono fechaNacimiento telefonoContacto estado
+comment1.target=Socio(java.lang.String, java.lang.String, int, int, java.util.Date, int, java.lang.String)
+comment1.text=\r\n Constructor for objects of class Socio\r\n
+numComments=2

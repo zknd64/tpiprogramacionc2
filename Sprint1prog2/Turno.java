@@ -26,6 +26,9 @@ public class Turno
         this.cupoMaximo=cupoMaximo;
         this.estado=estado;
     }
+    public Socio getSocio(){
+        return socio;
+    }
 
     
 }

@@ -29,6 +29,8 @@ public class Turno
     public Socio getSocio(){
         return socio;
     }
-
+    public Profesor getprofesor(){
+        return profesor;
+    }
     
 }

@@ -25,4 +25,7 @@ public class Inscripcion
          this.fechaFin=fechaFin;
          this.descuento=descuento;
     }
+    public Date getFechaInicio(){
+        return fechaInicio;
+    }
 }

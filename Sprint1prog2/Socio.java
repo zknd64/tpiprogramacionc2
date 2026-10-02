@@ -30,7 +30,53 @@ public class Socio
         this.telefono=telefono;
         this.fechaNacimiento=fechaNacimiento;
         this.telefonoContacto=telefonoContacto;
+        this.estado=estado;
+    }
+    
+    public void activar() {
+        this.estado = "Activo";
     }
 
-    
+    public void darDeBaja() {
+        this.estado = "Inactivo";
+    }
+
+    public void modificarDatos(String nombre, String apellido, int telefono, int telefonoContacto) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.telefono = telefono;
+        this.telefonoContacto = telefonoContacto;
+    }
+
+    // Getters
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public int getDni() {
+        return dni;
+    }
+
+    public int getTelefono() {
+        return telefono;
+    }
+
+    public Date getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public int getTelefonoContacto() {
+        return telefonoContacto;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
 }
+
+    

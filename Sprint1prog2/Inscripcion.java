@@ -24,8 +24,25 @@ public class Inscripcion
          this.fechaInicio=fechaInicio;
          this.fechaFin=fechaFin;
          this.descuento=descuento;
-    }
-    public Date getFechaInicio(){
+        }
+
+    
+    public Date getFechaInicio() {
         return fechaInicio;
+    }
+
+    
+
+    public double calcularDescuento() {
+        return (plan.getPrecio() * descuento) / 100.0;
+    }
+
+    public double calcularPrecioFinal() {
+        return plan.getPrecio() - calcularDescuento();
+    }
+
+    public boolean verificarVigencia() {
+        Date hoy = new Date();
+        return !hoy.after(fechaFin);
     }
 }

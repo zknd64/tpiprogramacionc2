@@ -1,5 +1,9 @@
 #BlueJ class context
+<<<<<<< HEAD
 #Sun Oct 04 19:32:23 ART 2026
+=======
+#Sun Oct 04 18:27:25 ART 2026
+>>>>>>> 411a5ae1fab6512c938de5d4bb1360ace7a6b7d9
 comment0.target=Inscripcion
 comment0.text=\r\n Write a description of class Inscripcion here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
 comment1.params=socio plan fechaInicio fechaFin descuento

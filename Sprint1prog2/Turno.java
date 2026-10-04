@@ -32,5 +32,13 @@ public class Turno
     public Profesor getprofesor(){
         return profesor;
     }
-    
+    public Timer getHorario(){
+        return horario;
+    }
+    public int getCupoMaximo(){
+        return cupoMaximo;
+    }
+    public boolean getEstado(){
+        return estado;
+    }
 }

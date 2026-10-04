@@ -1,7 +1,17 @@
 #BlueJ class context
-#Fri Oct 02 20:44:36 ART 2026
+#Sun Oct 04 18:22:42 ART 2026
 comment0.target=Sistema
 comment0.text=\r\n Write a description of class Sistema here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
 comment1.target=Sistema()
 comment1.text=\r\n Constructor for objects of class Sistema\r\n
-numComments=2
+comment2.params=socio
+comment2.target=void registrarSocio(Socio)
+comment3.params=socio
+comment3.target=void darDeBajaSocio(Socio)
+comment4.params=profesor
+comment4.target=void registrarProfesor(Profesor)
+comment5.params=inscripcion
+comment5.target=void registrarInscripcion(Inscripcion)
+comment6.params=turno
+comment6.target=void registrarTurno(Turno)
+numComments=7

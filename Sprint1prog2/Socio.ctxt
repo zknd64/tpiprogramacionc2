@@ -1,10 +1,10 @@
 #BlueJ class context
-#Sun Oct 04 15:33:42 PET 2026
+#Sun Oct 04 18:27:18 ART 2026
 comment0.target=Socio
-comment0.text=\n Write a description of class Socio here.\n \n @author (your name) \n @version (a version number or a date)\n
+comment0.text=\r\n Write a description of class Socio here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
 comment1.params=nombre apellido dni telefono fechaNacimiento telefonoContacto estado
 comment1.target=Socio(java.lang.String, java.lang.String, int, int, java.util.Date, int, java.lang.String)
-comment1.text=\n Constructor for objects of class Socio\n
+comment1.text=\r\n Constructor for objects of class Socio\r\n
 comment10.target=int getTelefonoContacto()
 comment11.target=java.lang.String getEstado()
 comment2.target=void activar()

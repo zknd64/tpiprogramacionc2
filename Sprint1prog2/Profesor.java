@@ -1,28 +1,32 @@
 
-/**
- * Write a description of class Profesor here.
- * 
- * @author (your name) 
- * @version (a version number or a date)
- */
-public class Profesor
-{
+public class Profesor{
     
     private int dni;
     private String nombre;
     private String apellido;
-    private int telefono;
+    private String telefono;
 
-    /**
-     * Constructor for objects of class Profesor
-     */
-    public Profesor(int dni, String nombre,String apellido,int telefono)
-    {
+    public Profesor(int dni, String nombre,String apellido,String telefono){
         this.dni=dni;
         this.nombre=nombre;
         this.apellido=apellido;
         this.telefono=telefono;
     }
-
-    
+    public void modificarDatos (String nombre, String apellido, String telefono){
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.telefono = telefono;
+    }
+    public int getDni(){
+        return dni;
+    }
+    public String getNombre(){
+        return nombre;
+    }
+    public String getApellido(){
+        return apellido;
+    }
+    public String getTelefono(){
+        return telefono;
+    }
 }

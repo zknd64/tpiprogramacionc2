@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class Turno
 {
     private ArrayList<Socio>socios;
+    private ArrayList<Socio>asistentes;
     private Profesor profesor;
     private Timer horario;
     private int cupoMaximo;
@@ -38,5 +39,24 @@ public class Turno
     }
     public boolean getEstado(){
         return estado;
+    }
+    // saber si quedan cupos disponibles
+    public boolean validarCupoDisponible() {
+    return socios.size() < cupoMaximo;
+}
+    // registrar la reserva
+    public void registrarReserva(Socio socio) {
+    if (validarCupoDisponible()) {
+        socios.add(socio);
+    }
+}
+// asistencia
+public boolean verificarAsistencia(Socio socio) {
+    for (Socio s : asistentes) {
+        if (s.getDni()==(socio.getDni())){
+            return true;
+        }
+    }
+    return false;
     }
 }

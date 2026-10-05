@@ -1,5 +1,5 @@
 #BlueJ class context
-#Sun Oct 04 18:42:45 ART 2026
+#Sun Oct 04 21:17:12 ART 2026
 comment0.target=Turno
 comment0.text=\r\n Write a description of class Turno here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
 comment1.params=socio profesor horario cupoMaximo estado

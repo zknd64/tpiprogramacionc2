@@ -1,16 +1,16 @@
 #BlueJ class context
-<<<<<<< HEAD
-#Sun Oct 04 19:32:23 ART 2026
-=======
-#Sun Oct 04 18:27:25 ART 2026
->>>>>>> 411a5ae1fab6512c938de5d4bb1360ace7a6b7d9
+#Sun Oct 04 21:34:32 ART 2026
 comment0.target=Inscripcion
-comment0.text=\r\n Write a description of class Inscripcion here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
 comment1.params=socio plan fechaInicio fechaFin descuento
 comment1.target=Inscripcion(Socio, Plan, java.util.Date, java.util.Date, int)
-comment1.text=\r\n Constructor for objects of class Inscripcion\r\n
-comment2.target=java.util.Date getFechaInicio()
-comment3.target=double calcularDescuento()
-comment4.target=double calcularPrecioFinal()
-comment5.target=boolean verificarVigencia()
-numComments=6
+comment10.params=descuento
+comment10.target=void setDescuento(int)
+comment2.target=double calcularDescuento()
+comment3.target=double calcularPrecioFinal()
+comment4.target=boolean verificarVigencia()
+comment5.target=Socio getSocio()
+comment6.target=Plan getPlan()
+comment7.target=java.util.Date getFechaInicio()
+comment8.target=java.util.Date getFechaFin()
+comment9.target=int getDescuento()
+numComments=11

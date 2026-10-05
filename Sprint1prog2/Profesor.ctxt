@@ -1,8 +1,12 @@
 #BlueJ class context
-#Fri Oct 02 18:37:48 ART 2026
+#Mon Oct 05 13:21:17 ART 2026
 comment0.target=Profesor
-comment0.text=\r\n Write a description of class Profesor here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
 comment1.params=dni nombre apellido telefono
-comment1.target=Profesor(int, java.lang.String, java.lang.String, int)
-comment1.text=\r\n Constructor for objects of class Profesor\r\n
-numComments=2
+comment1.target=Profesor(int, java.lang.String, java.lang.String, java.lang.String)
+comment2.params=nombre apellido telefono
+comment2.target=void modificarDatos(java.lang.String, java.lang.String, java.lang.String)
+comment3.target=int getDni()
+comment4.target=java.lang.String getNombre()
+comment5.target=java.lang.String getApellido()
+comment6.target=java.lang.String getTelefono()
+numComments=7

@@ -1,5 +1,5 @@
 #BlueJ class context
-#Mon Oct 05 13:21:22 ART 2026
+#Wed Oct 21 22:11:25 ART 2026
 comment0.target=Inscripcion
 comment1.params=socio plan fechaInicio fechaFin descuento
 comment1.target=Inscripcion(Socio, Plan, java.util.Date, java.util.Date, int)

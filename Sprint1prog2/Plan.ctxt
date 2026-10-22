@@ -1,5 +1,5 @@
 #BlueJ class context
-#Mon Oct 05 13:21:24 ART 2026
+#Sun Oct 04 21:09:59 ART 2026
 comment0.target=Plan
 comment1.params=frecuenciaSemanal precio duracion
 comment1.target=Plan(int, double, int)

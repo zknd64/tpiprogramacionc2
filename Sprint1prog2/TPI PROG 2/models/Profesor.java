@@ -1,8 +1,8 @@
 package models;
 public class Profesor extends Persona{
 
-    public Profesor(String dni, String nombre,String apellido,String telefono){
-        super(dni, nombre, apellido, telefono);
+public Profesor(String nombre, String apellido, String dni, String telefono) {
+        super(nombre, apellido, dni, telefono);
     }
     public void modificarDatos (String nombre, String apellido, String telefono){
         setNombre(nombre);

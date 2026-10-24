@@ -1,5 +1,7 @@
 package models;
 
+import java.util.Date;
+
 public class Socio extends Persona
  {
     private Date fechaNacimiento;

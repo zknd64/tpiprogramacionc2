@@ -1,5 +1,7 @@
 package models;
 
+import java.util.Date;
+
 public class Inscripcion
  {
     private Socio socio;

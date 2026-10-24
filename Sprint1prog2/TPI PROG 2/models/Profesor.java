@@ -9,3 +9,4 @@ public class Profesor extends Persona{
         setApellido(apellido);
         setTelefono(telefono);
     }
+}

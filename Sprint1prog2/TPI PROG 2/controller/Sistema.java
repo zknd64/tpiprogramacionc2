@@ -23,8 +23,10 @@ public class Sistema{
         socios.add(socio);
     }
 
-    public void darDeBajaSocio(Socio socio) {
-        socio.darDeBaja();
+public void darDeBajaSocio(Socio socio) {
+        if (socios.contains(socio)) {
+            socio.darDeBaja();
+        }
     }
 
     public void registrarProfesor(Profesor profesor) {

@@ -1,6 +1,9 @@
 package controller;
 import java.until.ArrayList;
-
+import models.Socio;
+import models.Profesor;
+import models.Turno;
+import models.Inscripcion;
 
 public class Sistema{
     

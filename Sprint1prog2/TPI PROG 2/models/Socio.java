@@ -12,7 +12,7 @@ public class Socio extends Persona
     String telefono, Date fechaNacimiento,int telefonoContacto, String estado)
     
     {
-        super(dni,nombre,apellido,telefono);       
+       super(nombre, apellido, dni, telefono);       
         this.fechaNacimiento=fechaNacimiento;
         this.telefonoContacto=telefonoContacto;
         this.estado=estado;

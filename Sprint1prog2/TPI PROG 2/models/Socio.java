@@ -1,5 +1,33 @@
 package models;
 
-public class Socio {
+public class Socio extends Persona
+ {
+    private Date fechaNacimiento;
+    private int telefonoContacto;
+    private String estado;
+
+    public Socio(String nombre,String apellido,String dni,
+    String telefono, Date fechaNacimiento,int telefonoContacto, String estado)
     
+    {
+        super(dni,nombre,apellido,telefono);       
+        this.fechaNacimiento=fechaNacimiento;
+        this.telefonoContacto=telefonoContacto;
+        this.estado=estado;
+    }
+    public void activar() {
+        this.estado = "Activo";
+    }
+
+    public void darDeBaja() {
+        this.estado = "Inactivo";
+    }
+
+    public void modificarDatos(String nombre, String apellido, String telefono, int telefonoContacto) {
+        setNombre(nombre);
+        setApellido(apellido);
+        setTelefono(telefono);
+        this.telefonoContacto = telefonoContacto;
+    }
+
 }

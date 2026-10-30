@@ -1,6 +1,8 @@
-package models;
+package src.models;
 
 import java.util.Date;
+
+import EstadoSocio;
 
 public class Socio extends Persona {
     private Date fechaNacimiento;

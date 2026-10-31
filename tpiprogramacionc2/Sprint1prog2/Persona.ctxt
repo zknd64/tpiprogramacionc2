@@ -1,0 +1,20 @@
+#BlueJ class context
+#Wed Oct 21 21:45:07 ART 2026
+comment0.target=Persona
+comment0.text=\r\n Write a description of class Persona here.\r\n \r\n @author (your name) \r\n @version (a version number or a date)\r\n
+comment1.params=nombre apellido dni telefono
+comment1.target=Persona(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+comment1.text=\r\n Constructor for objects of class Persona\r\n
+comment2.target=java.lang.String getNombre()
+comment3.params=nombre
+comment3.target=void setNombre(java.lang.String)
+comment4.target=java.lang.String getApellido()
+comment5.params=apellido
+comment5.target=void setApellido(java.lang.String)
+comment6.target=java.lang.String getDni()
+comment7.params=dni
+comment7.target=void setDni(java.lang.String)
+comment8.target=java.lang.String getTelefono()
+comment9.params=telefono
+comment9.target=void setTelefono(java.lang.String)
+numComments=10

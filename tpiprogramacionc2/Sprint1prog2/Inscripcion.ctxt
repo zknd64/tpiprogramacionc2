@@ -1,0 +1,16 @@
+#BlueJ class context
+#Wed Oct 21 22:11:25 ART 2026
+comment0.target=Inscripcion
+comment1.params=socio plan fechaInicio fechaFin descuento
+comment1.target=Inscripcion(Socio, Plan, java.util.Date, java.util.Date, int)
+comment10.params=descuento
+comment10.target=void setDescuento(int)
+comment2.target=double calcularDescuento()
+comment3.target=double calcularPrecioFinal()
+comment4.target=boolean verificarVigencia()
+comment5.target=Socio getSocio()
+comment6.target=Plan getPlan()
+comment7.target=java.util.Date getFechaInicio()
+comment8.target=java.util.Date getFechaFin()
+comment9.target=int getDescuento()
+numComments=11

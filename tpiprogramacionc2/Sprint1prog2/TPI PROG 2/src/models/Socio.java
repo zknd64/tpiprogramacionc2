@@ -1,0 +1,37 @@
+package models;
+
+import java.time.LocalDate;
+
+public class Socio extends Persona {
+    private LocalDate fechaNacimiento;
+    private String telefonoContacto;
+
+    public Socio(String nombre, String apellido, String dni, String telefono,
+                 LocalDate fechaNacimiento, String telefonoContacto) {
+        super(nombre, apellido, dni, telefono);
+        this.fechaNacimiento = fechaNacimiento;
+        this.telefonoContacto = telefonoContacto;
+        this.estado = EstadoSocio.ACTIVO;
+    }
+
+    public LocalDate getFechaNacimiento() { return fechaNacimiento; }
+    public String getTelefonoContacto() { return telefonoContacto; }
+
+    public void modificarDatos(String nombre, String apellido, String telefono, String telefonoContacto) {
+        super.modificarDatos(nombre, apellido, telefono);
+        this.telefonoContacto = telefonoContacto;
+    }
+    private EstadoSocio estado;
+
+public void darDeBaja() {
+    this.estado = EstadoSocio.INACTIVO; 
+}
+
+public EstadoSocio getEstado() {
+    return estado;
+}
+
+public void setEstado(EstadoSocio estado) {
+    this.estado = estado;
+}
+}

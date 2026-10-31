@@ -1,4 +1,4 @@
-package src.controller;
+package controller;
 import java.util.ArrayList;
 import models.Socio;
 import models.Profesor;

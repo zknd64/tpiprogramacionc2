@@ -1,8 +1,8 @@
 package models;
 
 public enum EstadoTurno {
-    CONFIRMADO,
-    CANCELADO,
-    MODIFICADO
+    RESERVADO,
+    ASISTIO,
+    AUSENTE,
+    CANCELADO
 }
-

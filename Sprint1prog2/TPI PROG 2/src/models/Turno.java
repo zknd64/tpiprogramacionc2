@@ -8,17 +8,19 @@ import java.util.List;
 
 public class Turno {
     private final Profesor profesor;
+    private final int id;
     private final LocalDate fecha;
     private final LocalTime horario;
     private final int cupoMaximo;
     private final List<DetalleTurno> detalles;
 
-    public Turno(Profesor profesor, LocalDate fecha, LocalTime horario, int cupoMaximo) {
+    public Turno(int id, Profesor profesor, LocalDate fecha, LocalTime horario, int cupoMaximo) {
         if (profesor == null || fecha == null || horario == null)
             throw new IllegalArgumentException("Profesor, fecha y horario son obligatorios");
         if (cupoMaximo <= 0)
             throw new IllegalArgumentException("El cupo máximo debe ser mayor a 0");
         this.profesor = profesor;
+        this.id = id;
         this.fecha = fecha;
         this.horario = horario;
         this.cupoMaximo = cupoMaximo;
@@ -64,7 +66,7 @@ public class Turno {
         if (d == null) throw new IllegalStateException("El socio no tiene reserva en este turno");
         d.registrarAsistencia(asistio);
     }
-
+    public int getId() { return id; }
     public Profesor getProfesor() { return profesor; }
     public LocalDate getFecha() { return fecha; }
     public LocalTime getHorario() { return horario; }

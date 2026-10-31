@@ -1,7 +1,7 @@
 package models;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +26,7 @@ public class Turno {
         this.cupoMaximo = cupoMaximo;
         this.detalles = new ArrayList<>();
     }
-
+//aplica interfaz
     private DetalleTurno buscarDetalleActivo(Socio socio) {
         for (DetalleTurno d : detalles) {
             if (d.getSocio().equals(socio) && d.getEstado() != EstadoTurno.CANCELADO) {
@@ -35,7 +35,7 @@ public class Turno {
         }
         return null;
     }
-
+//aplica interfaz
     public int cupoDisponible() {
         int ocupados = 0;
         for (DetalleTurno d : detalles) {
@@ -58,7 +58,7 @@ public class Turno {
     public void cancelarReserva(Socio socio) {
         DetalleTurno d = buscarDetalleActivo(socio);
         if (d == null) throw new IllegalStateException("El socio no tiene reserva en este turno");
-        d.cancelar();
+        d.cancelar(); // Aquí interactúa directamente con el cambio de estado
     }
 
     public void registrarAsistencia(Socio socio, boolean asistio) {
@@ -66,6 +66,7 @@ public class Turno {
         if (d == null) throw new IllegalStateException("El socio no tiene reserva en este turno");
         d.registrarAsistencia(asistio);
     }
+    
     public int getId() { return id; }
     public Profesor getProfesor() { return profesor; }
     public LocalDate getFecha() { return fecha; }

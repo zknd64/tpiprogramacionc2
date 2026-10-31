@@ -1,60 +1,42 @@
 package models;
+import java.time.LocalDate;
 
-import java.util.Date;
+ public class Inscripcion {
+    private final Socio socio;
+    private final Plan plan;
+    private final LocalDate fechaInicio;
+    private final LocalDate fechaFin;
+    private final int descuento; 
+    private EstadoInscripcion estado;
 
-public class Inscripcion
- {
-    private Socio socio;
-    private Plan plan;
-    private Date fechaInicio;
-    private Date fechaFin;
-    private int descuento; 
-
-  public Inscripcion(Socio socio, Plan plan, Date fechaInicio, Date fechaFin, int descuento)
-    {
-         this.socio = socio;
-         this.plan = plan;
-         this.fechaInicio = fechaInicio;
-         this.fechaFin = fechaFin;
-         this.descuento = descuento;
+    public Inscripcion(Socio socio, Plan plan, LocalDate fechaInicio, int descuento) {
+        if (socio == null || plan == null || fechaInicio == null)
+            throw new IllegalArgumentException("Socio, plan y fecha de inicio son obligatorios");
+        if (descuento < 0 || descuento > 100)
+            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100");
+        this.socio = socio;
+        this.plan = plan;
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaInicio.plusMonths(plan.getDuracionMeses());
+        this.descuento = descuento;
+        this.estado = EstadoInscripcion.ACTIVA;
     }
 
     public double calcularDescuento() {
-        return descuento;
+        return plan.getPrecio() * descuento / 100.0;
     }
 
     public double calcularPrecioFinal() {
-        return plan.calcularPrecio() - calcularDescuento();
+        return plan.getPrecio() - calcularDescuento();
     }
 
     public boolean verificarVigencia() {
-        Date hoy = new Date();
-        return !hoy.before(fechaInicio) && !hoy.after(fechaFin);
-    }
-
-    public Socio getSocio(){
-        return socio;
-    }
-    
-    public Plan getPlan(){
-        return plan;
-    }
-    
-    public Date getFechaInicio(){
-        return fechaInicio;
-    }
-    
-    public Date getFechaFin(){
-        return fechaFin;
-    }
-    
-    public int getDescuento(){ 
-        return descuento;
-    }
-    
-    public void setDescuento(int descuento){ 
-        this.descuento = descuento;
+        LocalDate hoy = LocalDate.now();
+        return estado == EstadoInscripcion.ACTIVA
+                && !hoy.isBefore(fechaInicio)
+                && !hoy.isAfter(fechaFin);
     }
 }
 
+    
 

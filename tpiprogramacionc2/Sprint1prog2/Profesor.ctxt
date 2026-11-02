@@ -1,0 +1,8 @@
+#BlueJ class context
+#Wed Oct 21 22:11:25 ART 2026
+comment0.target=Profesor
+comment1.params=dni nombre apellido telefono
+comment1.target=Profesor(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+comment2.params=nombre apellido telefono
+comment2.target=void modificarDatos(java.lang.String, java.lang.String, java.lang.String)
+numComments=3

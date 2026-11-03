@@ -1,3 +1,4 @@
+```java
 package exceptions;
 
 public class SocioNoEncontrado extends Exception {
@@ -5,3 +6,4 @@ public class SocioNoEncontrado extends Exception {
         super(mensaje);
     }
 }
+```

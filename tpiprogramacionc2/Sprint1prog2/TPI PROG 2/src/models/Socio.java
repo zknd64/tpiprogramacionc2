@@ -11,7 +11,6 @@ public class Socio extends Persona {
         super(nombre, apellido, dni, telefono);
         this.fechaNacimiento = fechaNacimiento;
         this.telefonoContacto = telefonoContacto;
-        this.estado = EstadoSocio.ACTIVO;
     }
 
     public LocalDate getFechaNacimiento() { return fechaNacimiento; }
@@ -21,17 +20,4 @@ public class Socio extends Persona {
         super.modificarDatos(nombre, apellido, telefono);
         this.telefonoContacto = telefonoContacto;
     }
-    private EstadoSocio estado;
-
-public void darDeBaja() {
-    this.estado = EstadoSocio.INACTIVO; 
-}
-
-public EstadoSocio getEstado() {
-    return estado;
-}
-
-public void setEstado(EstadoSocio estado) {
-    this.estado = estado;
-}
 }

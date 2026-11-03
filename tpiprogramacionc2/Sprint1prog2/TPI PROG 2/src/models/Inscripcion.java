@@ -1,12 +1,13 @@
 package models;
+
 import java.time.LocalDate;
 
- public class Inscripcion {
+public class Inscripcion {
     private final Socio socio;
     private final Plan plan;
     private final LocalDate fechaInicio;
     private final LocalDate fechaFin;
-    private final int descuento; 
+    private final int descuento; // porcentaje, de 0 a 100
     private EstadoInscripcion estado;
 
     public Inscripcion(Socio socio, Plan plan, LocalDate fechaInicio, int descuento) {
@@ -22,13 +23,8 @@ import java.time.LocalDate;
         this.estado = EstadoInscripcion.ACTIVA;
     }
 
-    public double calcularDescuento() {
-        return plan.getPrecio() * descuento / 100.0;
-    }
-
-    public double calcularPrecioFinal() {
-        return plan.getPrecio() - calcularDescuento();
-    }
+    public double calcularDescuento() { return plan.getPrecio() * descuento / 100.0; }
+    public double calcularPrecioFinal() { return plan.getPrecio() - calcularDescuento(); }
 
     public boolean verificarVigencia() {
         LocalDate hoy = LocalDate.now();
@@ -36,7 +32,30 @@ import java.time.LocalDate;
                 && !hoy.isBefore(fechaInicio)
                 && !hoy.isAfter(fechaFin);
     }
+
+    public void actualizarEstado() {
+        if (estado == EstadoInscripcion.ACTIVA && LocalDate.now().isAfter(fechaFin))
+            estado = EstadoInscripcion.VENCIDA;
+    }
+
+    public void suspender() {
+        if (estado != EstadoInscripcion.ACTIVA)
+            throw new IllegalStateException("Solo se puede suspender una inscripción activa");
+        estado = EstadoInscripcion.SUSPENDIDA;
+    }
+
+    public void reactivar() {
+        if (estado != EstadoInscripcion.SUSPENDIDA)
+            throw new IllegalStateException("Solo se puede reactivar una inscripción suspendida");
+        estado = EstadoInscripcion.ACTIVA;
+    }
+
+    public void cancelar() { estado = EstadoInscripcion.CANCELADA; }
+
+    public Socio getSocio() { return socio; }
+    public Plan getPlan() { return plan; }
+    public LocalDate getFechaInicio() { return fechaInicio; }
+    public LocalDate getFechaFin() { return fechaFin; }
+    public int getDescuento() { return descuento; }
+    public EstadoInscripcion getEstado() { return estado; }
 }
-
-    
-

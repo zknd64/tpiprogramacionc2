@@ -1,8 +1,10 @@
 package view;
 
 import controller.Sistema;
-import exceptions.CupoLleno;
-import exceptions.SocioNoEncontrado;
+import exceptions.CupoLlenoException;
+import exceptions.SocioNoEncontradoException;
+import models.Inscripcion;
+import models.Plan;
 import models.Profesor;
 import models.Socio;
 import models.Turno;
@@ -16,31 +18,75 @@ import java.time.format.DateTimeParseException;
 public class VentanaGimnasio extends JFrame {
     private final Sistema sistema;
 
-    public VentanaGimnasio(Sistema sistema) {
-        this.sistema = sistema;
-        
-        setTitle("SISTEMA DE TURNOS - GYM");
-        setSize(600, 450);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centrar ventana
-
-        // Componente de pestañas
-        JTabbedPane pestañas = new JTabbedPane();
-
-        pestañas.addTab("Socios y Profesores", crearPanelPersonas());
-        pestañas.addTab("Crear Turnos", crearPanelTurnos());
-        pestañas.addTab("Inscripciones y Acciones", crearPanelAcciones());
-
-        add(pestañas);
+    /** Acción de un botón: devuelve el mensaje de éxito o lanza una excepción del negocio. */
+    @FunctionalInterface
+    private interface Accion {
+        String ejecutar() throws SocioNoEncontradoException, CupoLlenoException;
     }
 
-    // PESTAÑA 1: Registro de Socios y Profesores
+    public VentanaGimnasio(Sistema sistema) {
+        this.sistema = sistema;
+
+        setTitle("SISTEMA DE TURNOS - GYM");
+        setSize(700, 480);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JTabbedPane pestanias = new JTabbedPane();
+        pestanias.addTab("Socios y Profesores", crearPanelPersonas());
+        pestanias.addTab("Planes", crearPanelPlanes());
+        pestanias.addTab("Inscripciones", crearPanelInscripciones());
+        pestanias.addTab("Turnos", crearPanelTurnos());
+        pestanias.addTab("Reservas", crearPanelReservas());
+        add(pestanias);
+    }
+
+    // ---------- Manejo de errores y utilidades ----------
+
+    private void ejecutar(Accion accion) {
+        try {
+            JOptionPane.showMessageDialog(this, accion.ejecutar());
+        } catch (DateTimeParseException ex) {
+            mostrarError("Formato de fecha u hora inválido (fecha AAAA-MM-DD, hora HH:MM).");
+        } catch (NumberFormatException ex) {
+            mostrarError("Hay un campo numérico con un valor inválido.");
+        } catch (SocioNoEncontradoException | CupoLlenoException
+                 | IllegalArgumentException | IllegalStateException ex) {
+            mostrarError(ex.getMessage());
+        }
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private JPanel formulario(String titulo) {
+        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
+        panel.setBorder(BorderFactory.createTitledBorder(titulo));
+        return panel;
+    }
+
+    private void agregarFila(JPanel panel, String etiqueta, JComponent campo) {
+        panel.add(new JLabel(etiqueta));
+        panel.add(campo);
+    }
+
+    private JPanel arriba(JPanel contenido) {
+        JPanel contenedor = new JPanel(new BorderLayout());
+        contenedor.add(contenido, BorderLayout.NORTH);
+        return contenedor;
+    }
+
+    private void limpiar(JTextField... campos) {
+        for (JTextField campo : campos) campo.setText("");
+    }
+
+    // ---------- Pestaña 1: Socios y Profesores ----------
+
     private JPanel crearPanelPersonas() {
         JPanel panel = new JPanel(new GridLayout(1, 2, 10, 10));
 
-        // Formulario Socio
-        JPanel panelSocio = new JPanel(new GridLayout(8, 2, 5, 5));
-        panelSocio.setBorder(BorderFactory.createTitledBorder("Registrar Socio"));
+        JPanel panelSocio = formulario("Registrar Socio");
         JTextField txtNomS = new JTextField();
         JTextField txtApeS = new JTextField();
         JTextField txtDniS = new JTextField();
@@ -48,178 +94,184 @@ public class VentanaGimnasio extends JFrame {
         JTextField txtFecNac = new JTextField("AAAA-MM-DD");
         JTextField txtTelCont = new JTextField();
         JButton btnRegSocio = new JButton("Registrar Socio");
+        agregarFila(panelSocio, "Nombre:", txtNomS);
+        agregarFila(panelSocio, "Apellido:", txtApeS);
+        agregarFila(panelSocio, "DNI:", txtDniS);
+        agregarFila(panelSocio, "Teléfono:", txtTelS);
+        agregarFila(panelSocio, "Fec. Nacimiento:", txtFecNac);
+        agregarFila(panelSocio, "Tel. Contacto:", txtTelCont);
+        panelSocio.add(new JLabel(""));
+        panelSocio.add(btnRegSocio);
 
-        panelSocio.add(new JLabel("Nombre:")); panelSocio.add(txtNomS);
-        panelSocio.add(new JLabel("Apellido:")); panelSocio.add(txtApeS);
-        panelSocio.add(new JLabel("DNI:")); panelSocio.add(txtDniS);
-        panelSocio.add(new JLabel("Teléfono:")); panelSocio.add(txtTelS);
-        panelSocio.add(new JLabel("Fec. Nacimiento:")); panelSocio.add(txtFecNac);
-        panelSocio.add(new JLabel("Tel. Contacto:")); panelSocio.add(txtTelCont);
-        panelSocio.add(new JLabel("")); panelSocio.add(btnRegSocio);
+        btnRegSocio.addActionListener(e -> ejecutar(() -> {
+            LocalDate fechaNac = LocalDate.parse(txtFecNac.getText().trim());
+            sistema.registrarSocio(new Socio(txtNomS.getText().trim(), txtApeS.getText().trim(),
+                    txtDniS.getText().trim(), txtTelS.getText().trim(),
+                    fechaNac, txtTelCont.getText().trim()));
+            limpiar(txtNomS, txtApeS, txtDniS, txtTelS, txtTelCont);
+            return "Socio registrado con éxito.";
+        }));
 
-        btnRegSocio.addActionListener(e -> {
-            try {
-                LocalDate fn = LocalDate.parse(txtFecNac.getText().trim());
-                Socio nuevo = new Socio(txtNomS.getText().trim(), txtApeS.getText().trim(), 
-                                        txtDniS.getText().trim(), txtTelS.getText().trim(), 
-                                        fn, txtTelCont.getText().trim());
-                sistema.registrarSocio(nuevo);
-                JOptionPane.showMessageDialog(this, "Socio registrado con éxito.");
-                // Limpiar campos
-                txtNomS.setText(""); txtApeS.setText(""); txtDniS.setText(""); txtTelS.setText(""); txtTelCont.setText("");
-            } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(this, "Error: Formato de fecha inválido (Use AAAA-MM-DD).", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        // Formulario Profesor
-        JPanel panelProfe = new JPanel(new GridLayout(5, 2, 5, 5));
-        panelProfe.setBorder(BorderFactory.createTitledBorder("Registrar Profesor"));
+        JPanel panelProfe = formulario("Registrar Profesor");
         JTextField txtNomP = new JTextField();
         JTextField txtApeP = new JTextField();
         JTextField txtDniP = new JTextField();
         JTextField txtTelP = new JTextField();
         JButton btnRegProfe = new JButton("Registrar Profesor");
+        agregarFila(panelProfe, "Nombre:", txtNomP);
+        agregarFila(panelProfe, "Apellido:", txtApeP);
+        agregarFila(panelProfe, "DNI:", txtDniP);
+        agregarFila(panelProfe, "Teléfono:", txtTelP);
+        panelProfe.add(new JLabel(""));
+        panelProfe.add(btnRegProfe);
 
-        panelProfe.add(new JLabel("Nombre:")); panelProfe.add(txtNomP);
-        panelProfe.add(new JLabel("Apellido:")); panelProfe.add(txtApeP);
-        panelProfe.add(new JLabel("DNI:")); panelProfe.add(txtDniP);
-        panelProfe.add(new JLabel("Teléfono:")); panelProfe.add(txtTelP);
-        panelProfe.add(new JLabel("")); panelProfe.add(btnRegProfe);
+        btnRegProfe.addActionListener(e -> ejecutar(() -> {
+            sistema.registrarProfesor(new Profesor(txtNomP.getText().trim(), txtApeP.getText().trim(),
+                    txtDniP.getText().trim(), txtTelP.getText().trim()));
+            limpiar(txtNomP, txtApeP, txtDniP, txtTelP);
+            return "Profesor registrado con éxito.";
+        }));
 
-        btnRegProfe.addActionListener(e -> {
-            try {
-                Profesor nuevo = new Profesor(txtNomP.getText().trim(), txtApeP.getText().trim(), 
-                                              txtDniP.getText().trim(), txtTelP.getText().trim());
-                sistema.registrarProfesor(nuevo);
-                JOptionPane.showMessageDialog(this, "Profesor registrado con éxito.");
-                txtNomP.setText(""); txtApeP.setText(""); txtDniP.setText(""); txtTelP.setText("");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        panel.add(panelSocio);
-        panel.add(panelProfe);
+        panel.add(arriba(panelSocio));
+        panel.add(arriba(panelProfe));
         return panel;
     }
 
-    // PESTAÑA 2: Creación de Turnos
+    // ---------- Pestaña 2: Planes ----------
+
+    private JPanel crearPanelPlanes() {
+        JPanel panel = formulario("Registrar Plan");
+        JTextField txtNombre = new JTextField();
+        JTextField txtFrecuencia = new JTextField();
+        JTextField txtPrecio = new JTextField();
+        JTextField txtDuracion = new JTextField();
+        JButton btnRegistrar = new JButton("Registrar Plan");
+        agregarFila(panel, "Nombre:", txtNombre);
+        agregarFila(panel, "Frecuencia semanal:", txtFrecuencia);
+        agregarFila(panel, "Precio:", txtPrecio);
+        agregarFila(panel, "Duración (meses):", txtDuracion);
+        panel.add(new JLabel(""));
+        panel.add(btnRegistrar);
+
+        btnRegistrar.addActionListener(e -> ejecutar(() -> {
+            sistema.registrarPlan(new Plan(txtNombre.getText().trim(),
+                    Integer.parseInt(txtFrecuencia.getText().trim()),
+                    Double.parseDouble(txtPrecio.getText().trim()),
+                    Integer.parseInt(txtDuracion.getText().trim())));
+            limpiar(txtNombre, txtFrecuencia, txtPrecio, txtDuracion);
+            return "Plan registrado con éxito.";
+        }));
+
+        return arriba(panel);
+    }
+
+    // ---------- Pestaña 3: Inscripciones (contratar un plan) ----------
+
+    private JPanel crearPanelInscripciones() {
+        JPanel panel = formulario("Inscribir un socio a un plan");
+        JTextField txtDni = new JTextField();
+        JTextField txtPlan = new JTextField();
+        JTextField txtInicio = new JTextField(LocalDate.now().toString());
+        JTextField txtDescuento = new JTextField("0");
+        JButton btnInscribir = new JButton("Contratar Plan");
+        JButton btnActivo = new JButton("¿Socio activo?");
+        JButton btnBaja = new JButton("Dar de baja al socio");
+        agregarFila(panel, "DNI Socio:", txtDni);
+        agregarFila(panel, "Nombre del Plan:", txtPlan);
+        agregarFila(panel, "Fecha inicio (AAAA-MM-DD):", txtInicio);
+        agregarFila(panel, "Descuento (%):", txtDescuento);
+        panel.add(btnInscribir);
+        panel.add(btnActivo);
+        panel.add(new JLabel(""));
+        panel.add(btnBaja);
+
+        btnInscribir.addActionListener(e -> ejecutar(() -> {
+            Inscripcion nueva = sistema.registrarInscripcion(txtDni.getText().trim(),
+                    txtPlan.getText().trim(),
+                    LocalDate.parse(txtInicio.getText().trim()),
+                    Integer.parseInt(txtDescuento.getText().trim()));
+            return "Inscripción registrada. Precio final: $"
+                    + String.format("%.2f", nueva.calcularPrecioFinal())
+                    + " - Vence el " + nueva.getFechaFin();
+        }));
+
+        btnActivo.addActionListener(e -> ejecutar(() ->
+                sistema.socioActivo(txtDni.getText().trim())
+                        ? "El socio tiene una inscripción vigente."
+                        : "El socio NO tiene una inscripción vigente."));
+
+        btnBaja.addActionListener(e -> ejecutar(() -> {
+            sistema.darDeBajaSocio(txtDni.getText().trim());
+            return "Socio dado de baja: sus inscripciones fueron canceladas.";
+        }));
+
+        return arriba(panel);
+    }
+
+    // ---------- Pestaña 4: Turnos ----------
+
     private JPanel crearPanelTurnos() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Crear Nuevo Turno"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        JTextField txtIdT = new JTextField(10);
-        JTextField txtDniProf = new JTextField(10);
+        JPanel panel = formulario("Crear Nuevo Turno");
+        JTextField txtDniProf = new JTextField();
+        JTextField txtFecha = new JTextField(LocalDate.now().plusDays(1).toString());
         JTextField txtHora = new JTextField("HH:MM");
-        JTextField txtCupo = new JTextField(5);
-        JButton btnCrearTurno = new JButton("Registrar Turno");
+        JTextField txtCupo = new JTextField();
+        JButton btnCrear = new JButton("Registrar Turno");
+        agregarFila(panel, "DNI Profesor a cargo:", txtDniProf);
+        agregarFila(panel, "Fecha (AAAA-MM-DD):", txtFecha);
+        agregarFila(panel, "Horario (HH:MM):", txtHora);
+        agregarFila(panel, "Cupo máximo:", txtCupo);
+        panel.add(new JLabel(""));
+        panel.add(btnCrear);
 
-        gbc.gridx = 0; gbc.gridy = 0; panel.add(new JLabel("ID Turno (Numérico):"), gbc);
-        gbc.gridx = 1; panel.add(txtIdT, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; panel.add(new JLabel("DNI Profesor Cargo:"), gbc);
-        gbc.gridx = 1; panel.add(txtDniProf, gbc);
-        gbc.gridx = 0; gbc.gridy = 2; panel.add(new JLabel("Horario (HH:MM):"), gbc);
-        gbc.gridx = 1; panel.add(txtHora, gbc);
-        gbc.gridx = 0; gbc.gridy = 3; panel.add(new JLabel("Cupo Máximo:"), gbc);
-        gbc.gridx = 1; panel.add(txtCupo, gbc);
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; panel.add(btnCrearTurno, gbc);
+        btnCrear.addActionListener(e -> ejecutar(() -> {
+            Turno nuevo = sistema.registrarTurno(txtDniProf.getText().trim(),
+                    LocalDate.parse(txtFecha.getText().trim()),
+                    LocalTime.parse(txtHora.getText().trim()),
+                    Integer.parseInt(txtCupo.getText().trim()));
+            limpiar(txtDniProf, txtCupo);
+            return "Turno creado. Su ID es " + nuevo.getId();
+        }));
 
-        btnCrearTurno.addActionListener(e -> {
-            try {
-                int id = Integer.parseInt(txtIdT.getText().trim());
-                String dniProf = txtDniProf.getText().trim();
-                LocalTime horario = LocalTime.parse(txtHora.getText().trim());
-                int cupo = Integer.parseInt(txtCupo.getText().trim());
-
-                // Reutiliza tu lógica rápida de asignación del Main original
-                Profesor profeTurno = new Profesor("Profesor", "Asignado", dniProf, "000");
-                Turno nuevoTurno = new Turno(id, profeTurno, LocalDate.now().plusDays(1), horario, cupo);
-                
-                sistema.registrarTurno(nuevoTurno);
-                JOptionPane.showMessageDialog(this, "Turno ID " + id + " creado para mañana.");
-                txtIdT.setText(""); txtDniProf.setText(""); txtCupo.setText("");
-            } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(this, "Error: Formato de hora inválido (HH:MM).", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Error: ID y Cupo deben ser numéricos.", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        return panel;
+        return arriba(panel);
     }
 
-    // PESTAÑA 3: Gestión de operaciones (Inscripción, Asistencia, Cancelación)
-    private JPanel crearPanelAcciones() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Operaciones de Turnos"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+    // ---------- Pestaña 5: Reservas ----------
 
-        JTextField txtDniSocio = new JTextField(12);
-        JTextField txtIdTurno = new JTextField(8);
-        JComboBox<String> comboAsistio = new JComboBox<>(new String[]{"Asistió (S)", "Ausente (N)"});
-
-        JButton btnInscribir = new JButton("Inscribir Socio a Turno");
+    private JPanel crearPanelReservas() {
+        JPanel panel = formulario("Operaciones sobre turnos");
+        JTextField txtDniSocio = new JTextField();
+        JTextField txtIdTurno = new JTextField();
+        JComboBox<String> comboAsistio = new JComboBox<>(new String[]{"Asistió", "Ausente"});
+        JButton btnReservar = new JButton("Reservar Turno");
         JButton btnAsistencia = new JButton("Registrar Asistencia");
         JButton btnCancelar = new JButton("Cancelar Reserva");
+        agregarFila(panel, "DNI Socio:", txtDniSocio);
+        agregarFila(panel, "ID Turno:", txtIdTurno);
+        agregarFila(panel, "Condición de asistencia:", comboAsistio);
+        panel.add(btnReservar);
+        panel.add(btnAsistencia);
+        panel.add(btnCancelar);
 
-        gbc.gridx = 0; gbc.gridy = 0; panel.add(new JLabel("DNI Socio:"), gbc);
-        gbc.gridx = 1; panel.add(txtDniSocio, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; panel.add(new JLabel("ID Turno:"), gbc);
-        gbc.gridx = 1; panel.add(txtIdTurno, gbc);
-        gbc.gridx = 0; gbc.gridy = 2; panel.add(new JLabel("Condición Asistencia:"), gbc);
-        gbc.gridx = 1; panel.add(comboAsistio, gbc);
+        btnReservar.addActionListener(e -> ejecutar(() -> {
+            sistema.reservarTurno(txtDniSocio.getText().trim(),
+                    Integer.parseInt(txtIdTurno.getText().trim()));
+            return "Turno reservado con éxito.";
+        }));
 
-        // Grid para botones posicionados abajo
-        gbc.gridwidth = 2; gbc.gridx = 0;
-        gbc.gridy = 3; panel.add(btnInscribir, gbc);
-        gbc.gridy = 4; panel.add(btnAsistencia, gbc);
-        gbc.gridy = 5; panel.add(btnCancelar, gbc);
+        btnAsistencia.addActionListener(e -> ejecutar(() -> {
+            sistema.registrarAsistenciaTurno(txtDniSocio.getText().trim(),
+                    Integer.parseInt(txtIdTurno.getText().trim()),
+                    comboAsistio.getSelectedIndex() == 0);
+            return "Asistencia guardada correctamente.";
+        }));
 
-        // LÓGICA CONECTADA AL CONTROLADOR EXISTENTE (Captura excepciones personalizadas)
-        btnInscribir.addActionListener(e -> {
-            try {
-                String dni = txtDniSocio.getText().trim();
-                int id = Integer.parseInt(txtIdTurno.getText().trim());
-                sistema.registrarInscripcion(dni, id);
-                JOptionPane.showMessageDialog(this, "Inscripción exitosa realizada.");
-            } catch (SocioNoEncontrado | CupoLleno ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error del Sistema", JOptionPane.WARNING_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        btnCancelar.addActionListener(e -> ejecutar(() -> {
+            sistema.cancelarReservaTurno(txtDniSocio.getText().trim(),
+                    Integer.parseInt(txtIdTurno.getText().trim()));
+            return "Reserva cancelada. Cupo liberado.";
+        }));
 
-        btnAsistencia.addActionListener(e -> {
-            try {
-                String dni = txtDniSocio.getText().trim();
-                int id = Integer.parseInt(txtIdTurno.getText().trim());
-boolean asistio = comboAsistio.getSelectedIndex() == 0;
-sistema.registrarAsistenciaTurno(dni, id, asistio);
-JOptionPane.showMessageDialog(this, "Asistencia guardada correctamente.");
-} catch (Exception ex) {
-JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-}
-});
-btnCancelar.addActionListener(e -> {
-try {
-String dni = txtDniSocio.getText().trim();
-int id = Integer.parseInt(txtIdTurno.getText().trim());
-sistema.cancelarReservaTurno(dni, id);
-JOptionPane.showMessageDialog(this, "Reserva cancelada. Cupo liberado.");
-} catch (Exception ex) {
-JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-}
-});
-return panel;
-}
+        return arriba(panel);
+    }
 }

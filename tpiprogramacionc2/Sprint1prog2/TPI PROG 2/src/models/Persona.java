@@ -7,6 +7,8 @@ public abstract class Persona {
     private String telefono;
 
     public Persona(String nombre, String apellido, String dni, String telefono) {
+        if (dni == null || dni.isBlank())
+            throw new IllegalArgumentException("El DNI es obligatorio");
         this.nombre = nombre;
         this.apellido = apellido;
         this.dni = dni;

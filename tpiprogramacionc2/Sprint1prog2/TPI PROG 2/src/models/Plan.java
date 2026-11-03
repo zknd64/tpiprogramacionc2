@@ -14,7 +14,7 @@ public class Plan {
         if (precio < 0)
             throw new IllegalArgumentException("El precio no puede ser negativo");
         if (duracionMeses <= 0)
-            throw new IllegalArgumentException("La duracion debe ser mayor a 0");
+            throw new IllegalArgumentException("La duración debe ser mayor a 0");
         this.nombre = nombre;
         this.frecuenciaSemanal = frecuenciaSemanal;
         this.precio = precio;
@@ -26,4 +26,3 @@ public class Plan {
     public double getPrecio() { return precio; }
     public int getDuracionMeses() { return duracionMeses; }
 }
-   

@@ -23,8 +23,13 @@ public class Inscripcion {
         this.estado = EstadoInscripcion.ACTIVA;
     }
 
-    public double calcularDescuento() { return plan.getPrecio() * descuento / 100.0; }
-    public double calcularPrecioFinal() { return plan.getPrecio() - calcularDescuento(); }
+    public double calcularDescuento() {
+        return plan.getPrecio() * descuento / 100.0;
+    }
+
+    public double calcularPrecioFinal() {
+        return plan.getPrecio() - calcularDescuento();
+    }
 
     public boolean verificarVigencia() {
         LocalDate hoy = LocalDate.now();
@@ -34,8 +39,9 @@ public class Inscripcion {
     }
 
     public void actualizarEstado() {
-        if (estado == EstadoInscripcion.ACTIVA && LocalDate.now().isAfter(fechaFin))
+        if (estado == EstadoInscripcion.ACTIVA && LocalDate.now().isAfter(fechaFin)) {
             estado = EstadoInscripcion.VENCIDA;
+        }
     }
 
     public void suspender() {
@@ -50,7 +56,9 @@ public class Inscripcion {
         estado = EstadoInscripcion.ACTIVA;
     }
 
-    public void cancelar() { estado = EstadoInscripcion.CANCELADA; }
+    public void cancelar() {
+        estado = EstadoInscripcion.CANCELADA;
+    }
 
     public Socio getSocio() { return socio; }
     public Plan getPlan() { return plan; }

@@ -3,6 +3,7 @@ package view;
 import controller.Sistema;
 import exceptions.CupoLlenoException;
 import exceptions.SocioNoEncontradoException;
+import models.Estado;
 import models.Inscripcion;
 import models.Plan;
 import models.Profesor;
@@ -79,6 +80,11 @@ public class VentanaGimnasio extends JFrame {
 
     private void limpiar(JTextField... campos) {
         for (JTextField campo : campos) campo.setText("");
+    }
+
+    /** Polimorfismo: sirve para cualquier Estado (de inscripción o de turno). */
+    private String describir(Estado estado) {
+        return "Estado: " + estado.getDescripcion();
     }
 
     // ---------- Pestaña 1: Socios y Profesores ----------
@@ -192,7 +198,8 @@ public class VentanaGimnasio extends JFrame {
                     Integer.parseInt(txtDescuento.getText().trim()));
             return "Inscripción registrada. Precio final: $"
                     + String.format("%.2f", nueva.calcularPrecioFinal())
-                    + " - Vence el " + nueva.getFechaFin();
+                    + " - Vence el " + nueva.getFechaFin()
+                    + " - " + describir(nueva.getEstado());
         }));
 
         btnActivo.addActionListener(e -> ejecutar(() ->

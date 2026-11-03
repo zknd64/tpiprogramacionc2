@@ -1,8 +1,9 @@
 package models;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Inscripcion {
+public class Inscripcion implements Serializable {
     private final Socio socio;
     private final Plan plan;
     private final LocalDate fechaInicio;

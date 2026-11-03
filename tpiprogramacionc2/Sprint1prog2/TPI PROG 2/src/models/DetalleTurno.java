@@ -1,6 +1,8 @@
 package models;
 
-public class DetalleTurno {
+import java.io.Serializable;
+
+public class DetalleTurno implements Serializable {
     private final Socio socio;
     private EstadoTurno estado = EstadoTurno.RESERVADO;
 

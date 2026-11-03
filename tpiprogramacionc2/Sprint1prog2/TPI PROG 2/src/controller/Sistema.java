@@ -9,13 +9,14 @@ import models.Profesor;
 import models.Socio;
 import models.Turno;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Sistema {
+public class Sistema implements Serializable {
 
     private final List<Socio> socios = new ArrayList<>();
     private final List<Profesor> profesores = new ArrayList<>();

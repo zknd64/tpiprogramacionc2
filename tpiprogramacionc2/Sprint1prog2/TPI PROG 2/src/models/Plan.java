@@ -1,6 +1,8 @@
 package models;
 
-public class Plan {
+import java.io.Serializable;
+
+public class Plan implements Serializable {
     private final String nombre;
     private final int frecuenciaSemanal;
     private final double precio;

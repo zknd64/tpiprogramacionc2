@@ -2,13 +2,14 @@ package models;
 
 import exceptions.CupoLlenoException;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Turno {
+public class Turno implements Serializable {
     private final int id;
     private final Profesor profesor;
     private final LocalDate fecha;

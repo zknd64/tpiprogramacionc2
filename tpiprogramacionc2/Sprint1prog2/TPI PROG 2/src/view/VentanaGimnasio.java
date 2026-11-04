@@ -15,8 +15,10 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.time.format.DateTimeFormatter;
 
 public class VentanaGimnasio extends JFrame {
+    private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("H:m");
     private final Sistema sistema;
 
     /** Acción de un botón: devuelve el mensaje de éxito o lanza una excepción del negocio. */
@@ -196,6 +198,7 @@ public class VentanaGimnasio extends JFrame {
                     txtPlan.getText().trim(),
                     LocalDate.parse(txtInicio.getText().trim()),
                     Integer.parseInt(txtDescuento.getText().trim()));
+                    limpiar(txtDni, txtPlan, txtDescuento);
             return "Inscripción registrada. Precio final: $"
                     + String.format("%.2f", nueva.calcularPrecioFinal())
                     + " - Vence el " + nueva.getFechaFin()
@@ -209,6 +212,7 @@ public class VentanaGimnasio extends JFrame {
 
         btnBaja.addActionListener(e -> ejecutar(() -> {
             sistema.darDeBajaSocio(txtDni.getText().trim());
+            limpiar(txtDni);
             return "Socio dado de baja: sus inscripciones fueron canceladas.";
         }));
 
@@ -232,11 +236,13 @@ public class VentanaGimnasio extends JFrame {
         panel.add(btnCrear);
 
         btnCrear.addActionListener(e -> ejecutar(() -> {
+            LocalTime horaParseada = LocalTime.parse(txtHora.getText().trim(), FORMATO_HORA);
             Turno nuevo = sistema.registrarTurno(txtDniProf.getText().trim(),
                     LocalDate.parse(txtFecha.getText().trim()),
-                    LocalTime.parse(txtHora.getText().trim()),
-                    Integer.parseInt(txtCupo.getText().trim()));
-            limpiar(txtDniProf, txtCupo);
+                    horaParseada,
+                    Integer.parseInt(txtCupo.getText().trim())
+                );
+            limpiar(txtDniProf, txtCupo, txtHora);
             return "Turno creado. Su ID es " + nuevo.getId();
         }));
 
@@ -263,6 +269,7 @@ public class VentanaGimnasio extends JFrame {
         btnReservar.addActionListener(e -> ejecutar(() -> {
             sistema.reservarTurno(txtDniSocio.getText().trim(),
                     Integer.parseInt(txtIdTurno.getText().trim()));
+            limpiar(txtDniSocio, txtIdTurno);
             return "Turno reservado con éxito.";
         }));
 
@@ -270,12 +277,14 @@ public class VentanaGimnasio extends JFrame {
             sistema.registrarAsistenciaTurno(txtDniSocio.getText().trim(),
                     Integer.parseInt(txtIdTurno.getText().trim()),
                     comboAsistio.getSelectedIndex() == 0);
+            limpiar(txtDniSocio, txtIdTurno);        
             return "Asistencia guardada correctamente.";
         }));
 
         btnCancelar.addActionListener(e -> ejecutar(() -> {
             sistema.cancelarReservaTurno(txtDniSocio.getText().trim(),
                     Integer.parseInt(txtIdTurno.getText().trim()));
+            limpiar(txtDniSocio, txtIdTurno);        
             return "Reserva cancelada. Cupo liberado.";
         }));
 

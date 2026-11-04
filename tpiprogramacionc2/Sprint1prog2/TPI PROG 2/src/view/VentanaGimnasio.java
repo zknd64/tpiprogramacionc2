@@ -116,7 +116,7 @@ public class VentanaGimnasio extends JFrame {
             sistema.registrarSocio(new Socio(txtNomS.getText().trim(), txtApeS.getText().trim(),
                     txtDniS.getText().trim(), txtTelS.getText().trim(),
                     fechaNac, txtTelCont.getText().trim()));
-            limpiar(txtNomS, txtApeS, txtDniS, txtTelS, txtTelCont);
+            limpiar(txtNomS, txtApeS, txtDniS, txtTelS, txtTelCont, txtFecNac);
             return "Socio registrado con éxito.";
         }));
 

@@ -40,12 +40,14 @@ public class Inscripcion implements Serializable {
     }
 
     public void actualizarEstado() {
-        if (estado == EstadoInscripcion.ACTIVA && LocalDate.now().isAfter(fechaFin)) {
+         actualizarEstado();
+        if (estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA && LocalDate.now().isAfter(fechaFin)) {
             estado = EstadoInscripcion.VENCIDA;
         }
     }
 
     public void suspender() {
+        actualizarEstado();
         if (estado != EstadoInscripcion.ACTIVA)
             throw new IllegalStateException("Solo se puede suspender una inscripción activa");
         estado = EstadoInscripcion.SUSPENDIDA;

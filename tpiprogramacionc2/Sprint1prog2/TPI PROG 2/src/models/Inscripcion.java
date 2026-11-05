@@ -33,8 +33,9 @@ public class Inscripcion implements Serializable {
     }
 
     public boolean verificarVigencia() {
+        actualizarEstado(); 
         LocalDate hoy = LocalDate.now();
-        return estado == EstadoInscripcion.ACTIVA
+        return (estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA)
                 && !hoy.isBefore(fechaInicio)
                 && !hoy.isAfter(fechaFin);
     }

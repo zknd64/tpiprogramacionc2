@@ -45,7 +45,6 @@ public class Inscripcion implements Serializable {
     }
 
     public boolean verificarVigencia() {
-        
         LocalDate hoy = LocalDate.now();
         return (estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA)
                 && !hoy.isBefore(fechaInicio)
@@ -53,24 +52,14 @@ public class Inscripcion implements Serializable {
     }
 
     public void actualizarEstado() {
-<<<<<<< HEAD
-         
-        if (estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA && LocalDate.now().isAfter(fechaFin)) {
-=======
         if ((estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA) && LocalDate.now().isAfter(fechaFin)) {
->>>>>>> 1f8c0c7ecd937946437818ea8e688e632048e44a
             estado = EstadoInscripcion.VENCIDA;
         }
     }
 
     public void suspender() {
-<<<<<<< HEAD
-        
-        if (estado != EstadoInscripcion.ACTIVA)
-=======
         actualizarEstado();
         if (estado != EstadoInscripcion.ACTIVA) {
->>>>>>> 1f8c0c7ecd937946437818ea8e688e632048e44a
             throw new IllegalStateException("Solo se puede suspender una inscripción activa");
         }
         estado = EstadoInscripcion.SUSPENDIDA;

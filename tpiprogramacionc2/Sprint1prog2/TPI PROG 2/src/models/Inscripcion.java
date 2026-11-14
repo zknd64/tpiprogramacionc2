@@ -12,16 +12,28 @@ public class Inscripcion implements Serializable {
     private EstadoInscripcion estado;
 
     public Inscripcion(Socio socio, Plan plan, LocalDate fechaInicio, int descuento) {
-        if (socio == null || plan == null || fechaInicio == null)
-            throw new IllegalArgumentException("Socio, plan y fecha de inicio son obligatorios");
-        if (descuento < 0 || descuento > 100)
-            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100");
+        validarDatosObligatorios(socio, plan, fechaInicio);
+        validarDescuento(descuento);
+        
         this.socio = socio;
         this.plan = plan;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaInicio.plusMonths(plan.getDuracionMeses());
         this.descuento = descuento;
         this.estado = EstadoInscripcion.ACTIVA;
+        actualizarEstado();
+    }
+
+    private void validarDatosObligatorios(Socio socio, Plan plan, LocalDate fechaInicio) {
+        if (socio == null || plan == null || fechaInicio == null) {
+            throw new IllegalArgumentException("Socio, plan y fecha de inicio son obligatorios");
+        }
+    }
+
+    private void validarDescuento(int descuento) {
+        if (descuento < 0 || descuento > 100) {
+            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100");
+        }
     }
 
     public double calcularDescuento() {
@@ -41,22 +53,24 @@ public class Inscripcion implements Serializable {
     }
 
     public void actualizarEstado() {
-         actualizarEstado();
-        if (estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA && LocalDate.now().isAfter(fechaFin)) {
+        if ((estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA) && LocalDate.now().isAfter(fechaFin)) {
             estado = EstadoInscripcion.VENCIDA;
         }
     }
 
     public void suspender() {
         actualizarEstado();
-        if (estado != EstadoInscripcion.ACTIVA)
+        if (estado != EstadoInscripcion.ACTIVA) {
             throw new IllegalStateException("Solo se puede suspender una inscripción activa");
+        }
         estado = EstadoInscripcion.SUSPENDIDA;
     }
 
     public void reactivar() {
-        if (estado != EstadoInscripcion.SUSPENDIDA)
+        actualizarEstado();
+        if (estado != EstadoInscripcion.SUSPENDIDA) {
             throw new IllegalStateException("Solo se puede reactivar una inscripción suspendida");
+        }
         estado = EstadoInscripcion.ACTIVA;
     }
 

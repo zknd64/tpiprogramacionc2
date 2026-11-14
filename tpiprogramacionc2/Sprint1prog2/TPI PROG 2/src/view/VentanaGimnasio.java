@@ -74,9 +74,51 @@ public class VentanaGimnasio extends JFrame {
         panel.add(campo);
     }
 
+    // --- NUEVO MÉTODO PARA CARGAR LA IMAGEN ---
+    private JPanel crearImagen(String ruta, int ancho, int alto) {
+        JPanel panelImagen = new JPanel() {
+            private Image img = null;
+            
+            {
+                try {
+                    String path = "src/view/logo.png.png";
+                    java.io.File archivo = new java.io.File(path);
+                    
+                    if (archivo.exists()) {
+                        img = new ImageIcon(path).getImage();
+                    } else {
+                        java.io.File archivoAlt = new java.io.File("src/view/logo.png");
+                        if (archivoAlt.exists()) {
+                            img = new ImageIcon("src/view/logo.png").getImage();
+                        }
+                    }
+                } catch (Exception e) {
+                    img = null;
+                }
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (img != null) {
+                    // Dibuja la imagen completa abarcando todo el panel asignado
+                    g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+                }
+            }
+        };
+        
+        // Mantenemos el alto que lucía bien grande y le sumamos un borde con espacio arriba (ej: 25 píxeles de aire)
+        panelImagen.setPreferredSize(new Dimension(ancho, alto));
+        panelImagen.setBorder(javax.swing.BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        panelImagen.setOpaque(false);
+        return panelImagen;
+    }
+    // --- MÉTODO MODIFICADO PARA PONER LA IMAGEN ABAJO ---
     private JPanel arriba(JPanel contenido) {
-        JPanel contenedor = new JPanel(new BorderLayout());
+        JPanel contenedor = new JPanel(new BorderLayout(10, 10));
         contenedor.add(contenido, BorderLayout.NORTH);
+        // Si tu imagen se llama distinto, cambiá "/recursos/logo.png" acá abajo:
+        contenedor.add(crearImagen("src/Recursos/logo.png", 180, 180), BorderLayout.CENTER);
         return contenedor;
     }
 
@@ -140,9 +182,16 @@ public class VentanaGimnasio extends JFrame {
             return "Profesor registrado con éxito.";
         }));
 
-        panel.add(arriba(panelSocio));
-        panel.add(arriba(panelProfe));
-        return panel;
+        // --- MODIFICADO PARA QUE SALGA UNA SOLA IMAGEN ABAJO ---
+        JPanel colIzq = new JPanel(new BorderLayout());
+        colIzq.add(panelSocio, BorderLayout.NORTH);
+
+        JPanel colDer = new JPanel(new BorderLayout());
+        colDer.add(panelProfe, BorderLayout.NORTH);
+
+        panel.add(colIzq);
+        panel.add(colDer);
+        return arriba(panel);
     }
 
     // ---------- Pestaña 2: Planes ----------
@@ -198,7 +247,7 @@ public class VentanaGimnasio extends JFrame {
                     txtPlan.getText().trim(),
                     LocalDate.parse(txtInicio.getText().trim()),
                     Integer.parseInt(txtDescuento.getText().trim()));
-                    limpiar(txtDni, txtPlan, txtDescuento);
+            limpiar(txtDni, txtPlan, txtDescuento);
             return "Inscripción registrada. Precio final: $"
                     + String.format("%.2f", nueva.calcularPrecioFinal())
                     + " - Vence el " + nueva.getFechaFin()
@@ -241,7 +290,7 @@ public class VentanaGimnasio extends JFrame {
                     LocalDate.parse(txtFecha.getText().trim()),
                     horaParseada,
                     Integer.parseInt(txtCupo.getText().trim())
-                );
+            );
             limpiar(txtDniProf, txtCupo, txtHora);
             return "Turno creado. Su ID es " + nuevo.getId();
         }));

@@ -3,71 +3,80 @@ package models;
 import exceptions.CupoLlenoException;
 
 import java.io.Serializable;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Turno implements Serializable {
+
     private final int id;
     private final Profesor profesor;
     private final LocalDate fecha;
     private final LocalTime horario;
     private final int cupoMaximo;
-    private final List<DetalleTurno> detalles;
+    private final List<DetalleTurno> detalles = new ArrayList<>();
 
     public Turno(int id, Profesor profesor, LocalDate fecha, LocalTime horario, int cupoMaximo) {
-        if (profesor == null || fecha == null || horario == null)
-            throw new IllegalArgumentException("Profesor, fecha y horario son obligatorios");
-        if (cupoMaximo <= 0)
-            throw new IllegalArgumentException("El cupo máximo debe ser mayor a 0");
+        Validaciones.todosNoNulos("Profesor, fecha y horario son obligatorios", profesor, fecha, horario);
         this.id = id;
         this.profesor = profesor;
         this.fecha = fecha;
         this.horario = horario;
-        this.cupoMaximo = cupoMaximo;
-        this.detalles = new ArrayList<>();
+        this.cupoMaximo = Validaciones.positivo(cupoMaximo, "El cupo máximo debe ser mayor a 0");
     }
 
-    private DetalleTurno buscarDetalleActivo(Socio socio) {
-        for (DetalleTurno d : detalles) {
-            if (d.getSocio().equals(socio) && d.getEstado() != EstadoTurno.CANCELADO) {
-                return d;
-            }
-        }
-        return null;
+    private Optional<DetalleTurno> detalleActivo(Socio socio) {
+        return detalles.stream()
+                .filter(d -> d.getSocio().equals(socio) && d.getEstado() != EstadoTurno.CANCELADO)
+                .findFirst();
+    }
+
+    private DetalleTurno obtenerDetalleActivo(Socio socio) {
+        return detalleActivo(socio)
+                .orElseThrow(() -> new IllegalStateException("El socio no tiene reserva en este turno"));
     }
 
     public int cupoDisponible() {
-        int ocupados = 0;
-        for (DetalleTurno d : detalles) {
-            if (d.getEstado() != EstadoTurno.CANCELADO) ocupados++;
-        }
-        return cupoMaximo - ocupados;
+        long ocupados = detalles.stream().filter(d -> d.getEstado() != EstadoTurno.CANCELADO).count();
+        return cupoMaximo - (int) ocupados;
     }
 
     public boolean tieneReserva(Socio socio) {
-        return buscarDetalleActivo(socio) != null;
+        return detalleActivo(socio).isPresent();
+    }
+
+    public boolean yaOcurrio() {
+        return LocalDateTime.of(fecha, horario).isBefore(LocalDateTime.now());
+    }
+
+    public boolean mismaSemanaQue(Turno otro) {
+        return inicioDeSemana(fecha).equals(inicioDeSemana(otro.fecha));
+    }
+
+    private static LocalDate inicioDeSemana(LocalDate dia) {
+        return dia.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
     public void reservar(Socio socio) throws CupoLlenoException {
-        if (socio == null) throw new IllegalArgumentException("El socio no puede ser nulo");
+        Validaciones.noNulo(socio, "El socio no puede ser nulo");
+        if (yaOcurrio()) throw new IllegalStateException("No se puede reservar un turno que ya ocurrió");
         if (tieneReserva(socio)) throw new IllegalStateException("El socio ya reservó este turno");
         if (cupoDisponible() <= 0) throw new CupoLlenoException("No hay cupo disponible en este turno");
         detalles.add(new DetalleTurno(socio));
     }
 
     public void cancelarReserva(Socio socio) {
-        DetalleTurno d = buscarDetalleActivo(socio);
-        if (d == null) throw new IllegalStateException("El socio no tiene reserva en este turno");
-        d.cancelar();
+        obtenerDetalleActivo(socio).cancelar();
     }
 
     public void registrarAsistencia(Socio socio, boolean asistio) {
-        DetalleTurno d = buscarDetalleActivo(socio);
-        if (d == null) throw new IllegalStateException("El socio no tiene reserva en este turno");
-        d.registrarAsistencia(asistio);
+        obtenerDetalleActivo(socio).registrarAsistencia(asistio);
     }
 
     public int getId() { return id; }

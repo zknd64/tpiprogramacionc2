@@ -2,8 +2,14 @@ package models;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.Set;
 
 public class Inscripcion implements Serializable {
+
+    private static final Set<EstadoInscripcion> ESTADOS_ABIERTOS =
+            EnumSet.of(EstadoInscripcion.ACTIVA, EstadoInscripcion.SUSPENDIDA);
+
     private final Socio socio;
     private final Plan plan;
     private final LocalDate fechaInicio;
@@ -12,28 +18,13 @@ public class Inscripcion implements Serializable {
     private EstadoInscripcion estado;
 
     public Inscripcion(Socio socio, Plan plan, LocalDate fechaInicio, int descuento) {
-        validarDatosObligatorios(socio, plan, fechaInicio);
-        validarDescuento(descuento);
-        
+        Validaciones.todosNoNulos("Socio, plan y fecha de inicio son obligatorios", socio, plan, fechaInicio);
         this.socio = socio;
         this.plan = plan;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaInicio.plusMonths(plan.getDuracionMeses());
-        this.descuento = descuento;
+        this.descuento = Validaciones.entre(descuento, 0, 100, "El descuento debe estar entre 0 y 100");
         this.estado = EstadoInscripcion.ACTIVA;
-        actualizarEstado();
-    }
-
-    private void validarDatosObligatorios(Socio socio, Plan plan, LocalDate fechaInicio) {
-        if (socio == null || plan == null || fechaInicio == null) {
-            throw new IllegalArgumentException("Socio, plan y fecha de inicio son obligatorios");
-        }
-    }
-
-    private void validarDescuento(int descuento) {
-        if (descuento < 0 || descuento > 100) {
-            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100");
-        }
     }
 
     public double calcularDescuento() {
@@ -44,37 +35,52 @@ public class Inscripcion implements Serializable {
         return plan.getPrecio() - calcularDescuento();
     }
 
-    public boolean verificarVigencia() {
-        LocalDate hoy = LocalDate.now();
-        return (estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA)
-                && !hoy.isBefore(fechaInicio)
-                && !hoy.isAfter(fechaFin);
+    public boolean esDe(Socio otro) {
+        return socio.equals(otro);
     }
 
-    public void actualizarEstado() {
-        if ((estado == EstadoInscripcion.ACTIVA || estado == EstadoInscripcion.SUSPENDIDA) && LocalDate.now().isAfter(fechaFin)) {
-            estado = EstadoInscripcion.VENCIDA;
-        }
+    /** Abierta = activa o suspendida (todavía no vencida ni cancelada). */
+    public boolean estaAbierta() {
+        return ESTADOS_ABIERTOS.contains(getEstado());
+    }
+
+    /** ¿La inscripción permite asistir en esa fecha? */
+    public boolean cubre(LocalDate fecha) {
+        return estaAbierta() && !fecha.isBefore(fechaInicio) && !fecha.isAfter(fechaFin);
+    }
+
+    public boolean verificarVigencia() {
+        return cubre(LocalDate.now());
     }
 
     public void suspender() {
-        actualizarEstado();
-        if (estado != EstadoInscripcion.ACTIVA) {
+        if (getEstado() != EstadoInscripcion.ACTIVA)
             throw new IllegalStateException("Solo se puede suspender una inscripción activa");
-        }
         estado = EstadoInscripcion.SUSPENDIDA;
     }
 
     public void reactivar() {
-        actualizarEstado();
-        if (estado != EstadoInscripcion.SUSPENDIDA) {
+        if (getEstado() != EstadoInscripcion.SUSPENDIDA)
             throw new IllegalStateException("Solo se puede reactivar una inscripción suspendida");
-        }
         estado = EstadoInscripcion.ACTIVA;
     }
 
     public void cancelar() {
+        if (!estaAbierta())
+            throw new IllegalStateException("Solo se puede cancelar una inscripción activa o suspendida");
         estado = EstadoInscripcion.CANCELADA;
+    }
+
+    /** El vencimiento se resuelve de forma perezosa: nadie tiene que acordarse de actualizarlo. */
+    private void actualizarEstado() {
+        if (ESTADOS_ABIERTOS.contains(estado) && LocalDate.now().isAfter(fechaFin)) {
+            estado = EstadoInscripcion.VENCIDA;
+        }
+    }
+
+    public EstadoInscripcion getEstado() {
+        actualizarEstado();
+        return estado;
     }
 
     public Socio getSocio() { return socio; }
@@ -82,5 +88,4 @@ public class Inscripcion implements Serializable {
     public LocalDate getFechaInicio() { return fechaInicio; }
     public LocalDate getFechaFin() { return fechaFin; }
     public int getDescuento() { return descuento; }
-    public EstadoInscripcion getEstado() { return estado; }
 }

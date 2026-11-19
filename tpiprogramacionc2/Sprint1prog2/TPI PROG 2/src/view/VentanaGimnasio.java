@@ -1,5 +1,4 @@
 package view;
-
 import controller.Sistema;
 import exceptions.CupoLlenoException;
 import exceptions.SocioNoEncontradoException;
@@ -9,46 +8,49 @@ import models.Plan;
 import models.Profesor;
 import models.Socio;
 import models.Turno;
-
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.time.format.DateTimeFormatter;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 public class VentanaGimnasio extends JFrame {
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("H:m");
     private final Sistema sistema;
-
+    /** Cada tabla de listados registra acá cómo volver a llenarse desde el Sistema. */
+    private final List<Runnable> refrescadores = new ArrayList<>();
     /** Acción de un botón: devuelve el mensaje de éxito o lanza una excepción del negocio. */
     @FunctionalInterface
     private interface Accion {
         String ejecutar() throws SocioNoEncontradoException, CupoLlenoException;
     }
-
     public VentanaGimnasio(Sistema sistema) {
         this.sistema = sistema;
-
         setTitle("SISTEMA DE TURNOS - GYM");
         setSize(700, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
         JTabbedPane pestanias = new JTabbedPane();
         pestanias.addTab("Socios y Profesores", crearPanelPersonas());
         pestanias.addTab("Planes", crearPanelPlanes());
         pestanias.addTab("Inscripciones", crearPanelInscripciones());
         pestanias.addTab("Turnos", crearPanelTurnos());
         pestanias.addTab("Reservas", crearPanelReservas());
+        pestanias.addTab("Listados", crearPanelListados());
+        pestanias.addChangeListener(e -> refrescarListados());
         add(pestanias);
     }
-
     // ---------- Manejo de errores y utilidades ----------
-
     private void ejecutar(Accion accion) {
         try {
-            JOptionPane.showMessageDialog(this, accion.ejecutar());
+            String mensaje = accion.ejecutar();
+            refrescarListados();
+            JOptionPane.showMessageDialog(this, mensaje);
         } catch (DateTimeParseException ex) {
             mostrarError("Formato de fecha u hora inválido (fecha AAAA-MM-DD, hora HH:MM).");
         } catch (NumberFormatException ex) {
@@ -58,32 +60,26 @@ public class VentanaGimnasio extends JFrame {
             mostrarError(ex.getMessage());
         }
     }
-
     private void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
-
     private JPanel formulario(String titulo) {
         JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
         panel.setBorder(BorderFactory.createTitledBorder(titulo));
         return panel;
     }
-
     private void agregarFila(JPanel panel, String etiqueta, JComponent campo) {
         panel.add(new JLabel(etiqueta));
         panel.add(campo);
     }
-
     // --- NUEVO MÉTODO PARA CARGAR LA IMAGEN ---
     private JPanel crearImagen(String ruta, int ancho, int alto) {
         JPanel panelImagen = new JPanel() {
             private Image img = null;
-            
             {
                 try {
                     String path = "src/view/logo.png.png";
                     java.io.File archivo = new java.io.File(path);
-                    
                     if (archivo.exists()) {
                         img = new ImageIcon(path).getImage();
                     } else {
@@ -96,7 +92,6 @@ public class VentanaGimnasio extends JFrame {
                     img = null;
                 }
             }
-
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -106,7 +101,6 @@ public class VentanaGimnasio extends JFrame {
                 }
             }
         };
-        
         // Mantenemos el alto que lucía bien grande y le sumamos un borde con espacio arriba (ej: 25 píxeles de aire)
         panelImagen.setPreferredSize(new Dimension(ancho, alto));
         panelImagen.setBorder(javax.swing.BorderFactory.createEmptyBorder(25, 10, 10, 10));
@@ -121,21 +115,82 @@ public class VentanaGimnasio extends JFrame {
         contenedor.add(crearImagen("src/Recursos/logo.png", 180, 180), BorderLayout.CENTER);
         return contenedor;
     }
-
     private void limpiar(JTextField... campos) {
         for (JTextField campo : campos) campo.setText("");
     }
-
     /** Polimorfismo: sirve para cualquier Estado (de inscripción o de turno). */
     private String describir(Estado estado) {
         return "Estado: " + estado.getDescripcion();
     }
+    // ---------- Pestaña 6: Listados ----------
+    private void refrescarListados() {
+        refrescadores.forEach(Runnable::run);
+    }
+
+    /**
+     * Arma una tabla de solo lectura. Recibe de dónde sacar los datos y cómo convertir
+     * cada objeto del modelo en una fila: la vista no decide nada de negocio.
+     */
+    private <T> JScrollPane tabla(String[] columnas, Supplier<List<T>> fuente, Function<T, Object[]> fila) {
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        refrescadores.add(() -> {
+            modelo.setRowCount(0);
+            fuente.get().forEach(item -> modelo.addRow(fila.apply(item)));
+        });
+        refrescadores.get(refrescadores.size() - 1).run();
+        return new JScrollPane(new JTable(modelo));
+    }
+
+    private JPanel crearPanelListados() {
+        JTabbedPane listas = new JTabbedPane();
+        listas.addTab("Socios", tabla(
+                new String[]{"DNI", "Nombre", "Apellido", "Teléfono", "Nacimiento", "Tel. contacto"},
+                sistema::getSocios,
+                s -> new Object[]{s.getDni(), s.getNombre(), s.getApellido(), s.getTelefono(),
+                        s.getFechaNacimiento(), s.getTelefonoContacto()}));
+        listas.addTab("Profesores", tabla(
+                new String[]{"DNI", "Nombre", "Apellido", "Teléfono"},
+                sistema::getProfesores,
+                p -> new Object[]{p.getDni(), p.getNombre(), p.getApellido(), p.getTelefono()}));
+        listas.addTab("Planes", tabla(
+                new String[]{"Nombre", "Veces por semana", "Precio", "Duración (meses)"},
+                sistema::getPlanes,
+                p -> new Object[]{p.getNombre(), p.getFrecuenciaSemanal(), p.getPrecio(), p.getDuracionMeses()}));
+        listas.addTab("Inscripciones", tabla(
+                new String[]{"Socio", "Plan", "Inicio", "Fin", "Desc. %", "Precio final", "Estado"},
+                sistema::getInscripciones,
+                i -> new Object[]{i.getSocio().getDni(), i.getPlan().getNombre(), i.getFechaInicio(),
+                        i.getFechaFin(), i.getDescuento(), String.format("%.2f", i.calcularPrecioFinal()),
+                        i.getEstado().getDescripcion()}));
+        listas.addTab("Turnos", tabla(
+                new String[]{"ID", "Fecha", "Hora", "Profesor", "Cupo", "Libres"},
+                sistema::getTurnos,
+                t -> new Object[]{t.getId(), t.getFecha(), t.getHorario(), t.getProfesor().getApellido(),
+                        t.getCupoMaximo(), t.cupoDisponible()}));
+        listas.addTab("Reservas", tabla(
+                new String[]{"Turno", "Fecha", "Socio", "Estado"},
+                this::todasLasReservas,
+                r -> r));
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(listas, BorderLayout.CENTER);
+        return panel;
+    }
+
+    /** Una fila por cada reserva de cada turno (incluye las canceladas, con su estado). */
+    private List<Object[]> todasLasReservas() {
+        List<Object[]> filas = new ArrayList<>();
+        sistema.getTurnos().forEach(t -> t.getDetalles().forEach(d ->
+                filas.add(new Object[]{t.getId(), t.getFecha(), d.getSocio().getDni(),
+                        d.getEstado().getDescripcion()})));
+        return filas;
+    }
 
     // ---------- Pestaña 1: Socios y Profesores ----------
-
     private JPanel crearPanelPersonas() {
         JPanel panel = new JPanel(new GridLayout(1, 2, 10, 10));
-
         JPanel panelSocio = formulario("Registrar Socio");
         JTextField txtNomS = new JTextField();
         JTextField txtApeS = new JTextField();
@@ -152,7 +207,6 @@ public class VentanaGimnasio extends JFrame {
         agregarFila(panelSocio, "Tel. Contacto:", txtTelCont);
         panelSocio.add(new JLabel(""));
         panelSocio.add(btnRegSocio);
-
         btnRegSocio.addActionListener(e -> ejecutar(() -> {
             LocalDate fechaNac = LocalDate.parse(txtFecNac.getText().trim());
             sistema.registrarSocio(new Socio(txtNomS.getText().trim(), txtApeS.getText().trim(),
@@ -161,7 +215,6 @@ public class VentanaGimnasio extends JFrame {
             limpiar(txtNomS, txtApeS, txtDniS, txtTelS, txtTelCont, txtFecNac);
             return "Socio registrado con éxito.";
         }));
-
         JPanel panelProfe = formulario("Registrar Profesor");
         JTextField txtNomP = new JTextField();
         JTextField txtApeP = new JTextField();
@@ -174,28 +227,22 @@ public class VentanaGimnasio extends JFrame {
         agregarFila(panelProfe, "Teléfono:", txtTelP);
         panelProfe.add(new JLabel(""));
         panelProfe.add(btnRegProfe);
-
         btnRegProfe.addActionListener(e -> ejecutar(() -> {
             sistema.registrarProfesor(new Profesor(txtNomP.getText().trim(), txtApeP.getText().trim(),
                     txtDniP.getText().trim(), txtTelP.getText().trim()));
             limpiar(txtNomP, txtApeP, txtDniP, txtTelP);
             return "Profesor registrado con éxito.";
         }));
-
         // --- MODIFICADO PARA QUE SALGA UNA SOLA IMAGEN ABAJO ---
         JPanel colIzq = new JPanel(new BorderLayout());
         colIzq.add(panelSocio, BorderLayout.NORTH);
-
         JPanel colDer = new JPanel(new BorderLayout());
         colDer.add(panelProfe, BorderLayout.NORTH);
-
         panel.add(colIzq);
         panel.add(colDer);
         return arriba(panel);
     }
-
     // ---------- Pestaña 2: Planes ----------
-
     private JPanel crearPanelPlanes() {
         JPanel panel = formulario("Registrar Plan");
         JTextField txtNombre = new JTextField();
@@ -209,7 +256,6 @@ public class VentanaGimnasio extends JFrame {
         agregarFila(panel, "Duración (meses):", txtDuracion);
         panel.add(new JLabel(""));
         panel.add(btnRegistrar);
-
         btnRegistrar.addActionListener(e -> ejecutar(() -> {
             sistema.registrarPlan(new Plan(txtNombre.getText().trim(),
                     Integer.parseInt(txtFrecuencia.getText().trim()),
@@ -218,12 +264,9 @@ public class VentanaGimnasio extends JFrame {
             limpiar(txtNombre, txtFrecuencia, txtPrecio, txtDuracion);
             return "Plan registrado con éxito.";
         }));
-
         return arriba(panel);
     }
-
     // ---------- Pestaña 3: Inscripciones (contratar un plan) ----------
-
     private JPanel crearPanelInscripciones() {
         JPanel panel = formulario("Inscribir un socio a un plan");
         JTextField txtDni = new JTextField();
@@ -241,7 +284,6 @@ public class VentanaGimnasio extends JFrame {
         panel.add(btnActivo);
         panel.add(new JLabel(""));
         panel.add(btnBaja);
-
         btnInscribir.addActionListener(e -> ejecutar(() -> {
             Inscripcion nueva = sistema.registrarInscripcion(txtDni.getText().trim(),
                     txtPlan.getText().trim(),
@@ -253,23 +295,18 @@ public class VentanaGimnasio extends JFrame {
                     + " - Vence el " + nueva.getFechaFin()
                     + " - " + describir(nueva.getEstado());
         }));
-
         btnActivo.addActionListener(e -> ejecutar(() ->
                 sistema.socioActivo(txtDni.getText().trim())
                         ? "El socio tiene una inscripción vigente."
                         : "El socio NO tiene una inscripción vigente."));
-
         btnBaja.addActionListener(e -> ejecutar(() -> {
             sistema.darDeBajaSocio(txtDni.getText().trim());
             limpiar(txtDni);
             return "Socio dado de baja: sus inscripciones fueron canceladas.";
         }));
-
         return arriba(panel);
     }
-
     // ---------- Pestaña 4: Turnos ----------
-
     private JPanel crearPanelTurnos() {
         JPanel panel = formulario("Crear Nuevo Turno");
         JTextField txtDniProf = new JTextField();
@@ -283,7 +320,6 @@ public class VentanaGimnasio extends JFrame {
         agregarFila(panel, "Cupo máximo:", txtCupo);
         panel.add(new JLabel(""));
         panel.add(btnCrear);
-
         btnCrear.addActionListener(e -> ejecutar(() -> {
             LocalTime horaParseada = LocalTime.parse(txtHora.getText().trim(), FORMATO_HORA);
             Turno nuevo = sistema.registrarTurno(txtDniProf.getText().trim(),
@@ -294,12 +330,9 @@ public class VentanaGimnasio extends JFrame {
             limpiar(txtDniProf, txtCupo, txtHora);
             return "Turno creado. Su ID es " + nuevo.getId();
         }));
-
         return arriba(panel);
     }
-
     // ---------- Pestaña 5: Reservas ----------
-
     private JPanel crearPanelReservas() {
         JPanel panel = formulario("Operaciones sobre turnos");
         JTextField txtDniSocio = new JTextField();
@@ -314,14 +347,12 @@ public class VentanaGimnasio extends JFrame {
         panel.add(btnReservar);
         panel.add(btnAsistencia);
         panel.add(btnCancelar);
-
         btnReservar.addActionListener(e -> ejecutar(() -> {
             sistema.reservarTurno(txtDniSocio.getText().trim(),
                     Integer.parseInt(txtIdTurno.getText().trim()));
             limpiar(txtDniSocio, txtIdTurno);
             return "Turno reservado con éxito.";
         }));
-
         btnAsistencia.addActionListener(e -> ejecutar(() -> {
             sistema.registrarAsistenciaTurno(txtDniSocio.getText().trim(),
                     Integer.parseInt(txtIdTurno.getText().trim()),
@@ -329,14 +360,12 @@ public class VentanaGimnasio extends JFrame {
             limpiar(txtDniSocio, txtIdTurno);        
             return "Asistencia guardada correctamente.";
         }));
-
         btnCancelar.addActionListener(e -> ejecutar(() -> {
             sistema.cancelarReservaTurno(txtDniSocio.getText().trim(),
                     Integer.parseInt(txtIdTurno.getText().trim()));
             limpiar(txtDniSocio, txtIdTurno);        
             return "Reserva cancelada. Cupo liberado.";
         }));
-
         return arriba(panel);
     }
 }
